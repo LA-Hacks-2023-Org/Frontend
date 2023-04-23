@@ -129,7 +129,7 @@ const Home = () => {
     setShowRecipes(false)
     setShowSingleRecipe(false)
     setRecipeName("")
-    fetchIngredients()
+    // fetchIngredients()
   }
 
 
@@ -174,17 +174,19 @@ const Home = () => {
     setIngredients(dummyIngredients)
   }
 
-  const fetchRecipes = () => {
+  const fetchRecipes = async () => {
+
+
+    // const response = await axios.post("http://127.0.0.1:21394/generate_recipe", {
+    //   // content: ["onion", "carrot", "apple"],
+    //   content: ingredients.map(ingredient => ingredient.name)
+    // });
+
     const dummyRecipes = [
       {
         id: 1,
-        name: "Tomato Soup",
-        numberIngredients: 5
-      },
-      {
-        id: 2,
-        name: "Cheese Cake",
-        numberIngredients: 3
+        name: "Your Recipe",
+        numberIngredients: ingredients.length
       }
     ]
     setRecipes(dummyRecipes)
@@ -230,6 +232,32 @@ const Home = () => {
 
     continueToIngredients()
   };
+
+  const addToList = async () => {
+    const response = await axios.post("http://127.0.0.1:21394/find_expiry_single", {
+      content: nameInput
+    });
+    console.log("<resp></resp>", response)
+
+
+    const newItem = {
+      id: nameInput,
+      name: nameInput,
+      expiryString: response.data.expiration_date
+    };
+    setIngredients((prevItems) => [...prevItems, newItem]);
+  }
+
+  const [nameInput, setNameInput] = useState("")
+  const [expiryInput, setExpiryInput] = useState("")
+
+  const onNameChange = (e) => {
+    setNameInput(e.target.value)
+  }
+
+  const onExpiryChange = (e) => {
+    setExpiryInput(e.target.value)
+  }
 
 
   return (
@@ -299,8 +327,18 @@ const Home = () => {
             </div>
           </div>
 
-          <button onClick={continueToRecipes} className='absolute bottom-2 right-2 transition duration-100 bg-blue-400 p-4 rounded text-white active:bg-blue-500' >Continue</button>
 
+
+
+
+          {/* <button onClick={continueToRecipes} className='absolute bottom-2 left-2 transition duration-100 bg-blue-400 p-4 rounded text-white active:bg-blue-500' >Add</button> */}
+          <div className='absolute bottom-0 w-full bg-gray-400 h-[150px] p-2 flex flex-col space-y-2' >
+            <input type="text" value={nameInput} onChange={onNameChange} className='p-2 rounded' placeholder='name' />
+            {/* <input type="text" value={expiryInput} onChange={onExpiryChange} className='p-2 rounded' placeholder='expiry date' /> */}
+            <button onClick={() => { addToList() }} className='bg-blue-400 p-2 rounded' >Add</button>
+            <button onClick={continueToRecipes} className='absolute bottom-[154px] right-2 transition duration-100 bg-blue-400 p-4 rounded text-white active:bg-blue-500' >Continue</button>
+
+          </div>
         </div>
 
       }
