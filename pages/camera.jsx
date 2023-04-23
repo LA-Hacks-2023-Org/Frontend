@@ -208,6 +208,12 @@ const Home = () => {
   }
 
 
+  // Your paragraph with newline characters
+  const paragraph = "This is a line.\nThis is another line.\nThis is the third line.";
+
+  // Replace newline characters with <br> tags
+  const formattedParagraph = paragraph.replace(/\n/g, '<br>');
+
   return (
     <div>
 
@@ -220,8 +226,10 @@ const Home = () => {
             </button>
             <h1 className='absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-2xl'>{recipeName}</h1>
           </div>
-          <div className='h-full p-6' >
-            COHERE LLM OUTPUT
+          <div className='h-full p-6' dangerouslySetInnerHTML={{
+            __html: formattedParagraph,
+          }} >
+
           </div>
         </div>
 
