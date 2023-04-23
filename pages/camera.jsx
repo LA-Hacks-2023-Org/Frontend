@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import BackArrow from "../assets/BackArrow"
 import IngredientCard from "../components/IngredientCard"
 import RecipeCard from "../components/RecipeCard"
+import axios from "axios"
 
 const Home = () => {
   const videoRef = useRef(null)
@@ -14,24 +15,11 @@ const Home = () => {
   const [showRecipes, setShowRecipes] = useState(false)
   const [showSingleRecipe, setShowSingleRecipe] = useState(false)
   const [recipeName, setRecipeName] = useState("")
+  const [singleRecipeDisplay, setSingleRecipeDisplay] = useState("")
 
 
-  const [ingredients, setIngredients] = useState([{
-    name: "Tomato",
-    expiryString: "5 days"
-  },
-  {
-    name: "Potato",
-    expiryString: "7 days"
-  }])
-  const [recipes, setRecipes] = useState([{
-    name: "Tomato Soup",
-    numberIngredients: 5
-  },
-  {
-    name: "Cheese Cake",
-    numberIngredients: 3
-  }])
+  const [ingredients, setIngredients] = useState([])
+  const [recipes, setRecipes] = useState([])
 
 
   useEffect(() => {
@@ -164,6 +152,7 @@ const Home = () => {
     setShowRecipes(false)
     setShowSingleRecipe(true)
     setRecipeName(recipeName)
+    fetchRecipe()
   }
 
 
@@ -198,7 +187,7 @@ const Home = () => {
         numberIngredients: 3
       }
     ]
-    setIngredients(dummyRecipes)
+    setRecipes(dummyRecipes)
   }
 
 
@@ -207,12 +196,41 @@ const Home = () => {
     setIngredients(newIngredients)
   }
 
+  const fetchRecipe = async () => {
+    try {
+      const response = await axios.post("http://127.0.0.1:21394/generate_recipe", {
+        // content: ["onion", "carrot", "apple"],
+        content: ingredients.map(ingredient => ingredient.name)
+      });
 
-  // Your paragraph with newline characters
-  const paragraph = "This is a line.\nThis is another line.\nThis is the third line.";
+      console.log("response.data: ", response.data)
 
-  // Replace newline characters with <br> tags
-  const formattedParagraph = paragraph.replace(/\n/g, '<br>');
+      setSingleRecipeDisplay(response.data.recipe.replace(/\n/g, '<br>'));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // upload a photo
+  const [uploadedImage, setUploadedImage] = useState(null);
+  const [preview, setPreview] = useState(null);
+
+  const uploadHandler = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setUploadedImage(e.target.files[0]);
+      setPreview(URL.createObjectURL(e.target.files[0]));
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result;
+      console.log(base64String);
+    };
+    reader.readAsDataURL(e.target.files[0]);
+
+    continueToIngredients()
+  };
+
 
   return (
     <div>
@@ -227,7 +245,7 @@ const Home = () => {
             <h1 className='absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-2xl'>{recipeName}</h1>
           </div>
           <div className='h-full p-6' dangerouslySetInnerHTML={{
-            __html: formattedParagraph,
+            __html: singleRecipeDisplay,
           }} >
 
           </div>
@@ -312,7 +330,11 @@ const Home = () => {
             <div style={{ width: '390px', height: '724px', backgroundColor: '#eee' }}>
               {!webcamEnabled && (
 
-                <button onClick={toggleWebcam}>{webcamEnabled ? 'Turn off webcam' : 'Turn on webcam'}</button>
+                <div className='flex flex-col justify-center items-center h-full space-y-2' >
+                  <button onClick={toggleWebcam} className='p-4 mb-2 bg-blue-400 text-white rounded' >{webcamEnabled ? 'Turn off webcam' : 'Turn on webcam'}</button>
+                  <p>-- OR --</p>
+                  <input type="file" accept="image/*" className='w-[97px]' onChange={uploadHandler} />
+                </div>
 
               )}
 
@@ -339,6 +361,8 @@ const Home = () => {
                 </div>
               </div>
             </div>
+
+
           </div>
         </>
       }
